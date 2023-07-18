@@ -1,0 +1,451 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: production-pipeline-
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.19, pipelines.kubeflow.org/pipeline_compilation_time: '2023-07-18T16:30:08.297785',
+    pipelines.kubeflow.org/pipeline_spec: '{"description": "production training pipeline",
+      "inputs": [{"name": "dataset_str", "type": "String"}, {"name": "train_test_split",
+      "type": "Boolean"}, {"name": "experiment_name", "type": "String"}], "name":
+      "production-pipeline"}'}
+  labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.19}
+spec:
+  entrypoint: production-pipeline
+  templates:
+  - name: load-tensorflow-dataset-component
+    container:
+      args: [--dataset-str, '{{inputs.parameters.dataset_str}}', --train-test-split,
+        '{{inputs.parameters.train_test_split}}', --data-file-output, /tmp/outputs/data_file_output/data]
+      command:
+      - sh
+      - -c
+      - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+        'tensorflow' 'tensorflow_datasets' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3
+        -m pip install --quiet --no-warn-script-location 'tensorflow' 'tensorflow_datasets'
+        --user) && "$0" "$@"
+      - sh
+      - -ec
+      - |
+        program_path=$(mktemp)
+        printf "%s" "$0" > "$program_path"
+        python3 -u "$program_path" "$@"
+      - "def _make_parent_dirs_and_return_path(file_path: str):\n    import os\n \
+        \   os.makedirs(os.path.dirname(file_path), exist_ok=True)\n    return file_path\n\
+        \ndef load_tensorflow_dataset_component(dataset_str, \n                  \
+        \                    train_test_split, \n                                \
+        \      data_file_output):\n\n        import tensorflow_datasets as tfds\n\
+        \        import json\n\n        # define function\n        def load_tensorflow_dataset(dataset_str,\
+        \ \n                                    train_test_split = True):\n      \
+        \          # assign train_test_split param\n                if train_test_split\
+        \ is True:\n                        split = ['train[:20%]', 'test']\n    \
+        \            else:\n                        split = 'all'\n\n            \
+        \    # load\n                data, ds_info = tfds.load(\n                \
+        \        dataset_str,\n                        split=split, shuffle_files=True,\n\
+        \                        as_supervised=True,\n                        with_info=True,\n\
+        \                )\n\n                # package data\n                if train_test_split\
+        \ is True:\n                        data = {'train': data[0], \n         \
+        \                       'test': data[1]}\n                else:\n        \
+        \                data = {'train': data,\n                                'test':\
+        \ None}\n                return data\n\n        # output is a dictionary with\
+        \ 'test' and 'train' keys. \n        data = load_tensorflow_dataset(dataset_str=dataset_str,\
+        \ \n                                        train_test_split=train_test_split)\n\
+        \n        # save output data \n        data['train'].save(data_file_output)\n\
+        \        # with open(data_file_output, \"wb\") as file:\n        #       \
+        \  file.write(data['train'].to_file())\n\ndef _deserialize_bool(s) -> bool:\n\
+        \    from distutils.util import strtobool\n    return strtobool(s) == 1\n\n\
+        import argparse\n_parser = argparse.ArgumentParser(prog='Load tensorflow dataset\
+        \ component', description='')\n_parser.add_argument(\"--dataset-str\", dest=\"\
+        dataset_str\", type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"\
+        --train-test-split\", dest=\"train_test_split\", type=_deserialize_bool, required=True,\
+        \ default=argparse.SUPPRESS)\n_parser.add_argument(\"--data-file-output\"\
+        , dest=\"data_file_output\", type=_make_parent_dirs_and_return_path, required=True,\
+        \ default=argparse.SUPPRESS)\n_parsed_args = vars(_parser.parse_args())\n\n\
+        _outputs = load_tensorflow_dataset_component(**_parsed_args)\n"
+      image: python:3.9
+    inputs:
+      parameters:
+      - {name: dataset_str}
+      - {name: train_test_split}
+    outputs:
+      artifacts:
+      - {name: load-tensorflow-dataset-component-data_file_output, path: /tmp/outputs/data_file_output/data}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.19
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"implementation": {"container":
+          {"args": ["--dataset-str", {"inputValue": "dataset_str"}, "--train-test-split",
+          {"inputValue": "train_test_split"}, "--data-file-output", {"outputPath":
+          "data_file_output"}], "command": ["sh", "-c", "(PIP_DISABLE_PIP_VERSION_CHECK=1
+          python3 -m pip install --quiet --no-warn-script-location ''tensorflow''
+          ''tensorflow_datasets'' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip
+          install --quiet --no-warn-script-location ''tensorflow'' ''tensorflow_datasets''
+          --user) && \"$0\" \"$@\"", "sh", "-ec", "program_path=$(mktemp)\nprintf
+          \"%s\" \"$0\" > \"$program_path\"\npython3 -u \"$program_path\" \"$@\"\n",
+          "def _make_parent_dirs_and_return_path(file_path: str):\n    import os\n    os.makedirs(os.path.dirname(file_path),
+          exist_ok=True)\n    return file_path\n\ndef load_tensorflow_dataset_component(dataset_str,
+          \n                                      train_test_split, \n                                      data_file_output):\n\n        import
+          tensorflow_datasets as tfds\n        import json\n\n        # define function\n        def
+          load_tensorflow_dataset(dataset_str, \n                                    train_test_split
+          = True):\n                # assign train_test_split param\n                if
+          train_test_split is True:\n                        split = [''train[:20%]'',
+          ''test'']\n                else:\n                        split = ''all''\n\n                #
+          load\n                data, ds_info = tfds.load(\n                        dataset_str,\n                        split=split,
+          shuffle_files=True,\n                        as_supervised=True,\n                        with_info=True,\n                )\n\n                #
+          package data\n                if train_test_split is True:\n                        data
+          = {''train'': data[0], \n                                ''test'': data[1]}\n                else:\n                        data
+          = {''train'': data,\n                                ''test'': None}\n                return
+          data\n\n        # output is a dictionary with ''test'' and ''train'' keys.
+          \n        data = load_tensorflow_dataset(dataset_str=dataset_str, \n                                        train_test_split=train_test_split)\n\n        #
+          save output data \n        data[''train''].save(data_file_output)\n        #
+          with open(data_file_output, \"wb\") as file:\n        #         file.write(data[''train''].to_file())\n\ndef
+          _deserialize_bool(s) -> bool:\n    from distutils.util import strtobool\n    return
+          strtobool(s) == 1\n\nimport argparse\n_parser = argparse.ArgumentParser(prog=''Load
+          tensorflow dataset component'', description='''')\n_parser.add_argument(\"--dataset-str\",
+          dest=\"dataset_str\", type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--train-test-split\",
+          dest=\"train_test_split\", type=_deserialize_bool, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--data-file-output\",
+          dest=\"data_file_output\", type=_make_parent_dirs_and_return_path, required=True,
+          default=argparse.SUPPRESS)\n_parsed_args = vars(_parser.parse_args())\n\n_outputs
+          = load_tensorflow_dataset_component(**_parsed_args)\n"], "image": "python:3.9"}},
+          "inputs": [{"name": "dataset_str", "type": "String"}, {"name": "train_test_split",
+          "type": "Boolean"}], "name": "Load tensorflow dataset component", "outputs":
+          [{"name": "data_file_output", "type": "tf.data.Dataset"}]}', pipelines.kubeflow.org/component_ref: '{}',
+        pipelines.kubeflow.org/arguments.parameters: '{"dataset_str": "{{inputs.parameters.dataset_str}}",
+          "train_test_split": "{{inputs.parameters.train_test_split}}"}'}
+  - name: preprocess-component
+    container:
+      args: [--data-file-input, /tmp/inputs/data_file_input/data, --pp-data-file-output,
+        /tmp/outputs/pp_data_file_output/data]
+      command:
+      - sh
+      - -c
+      - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+        'numpy' 'tensorflow' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install
+        --quiet --no-warn-script-location 'numpy' 'tensorflow' --user) && "$0" "$@"
+      - sh
+      - -ec
+      - |
+        program_path=$(mktemp)
+        printf "%s" "$0" > "$program_path"
+        python3 -u "$program_path" "$@"
+      - "def _make_parent_dirs_and_return_path(file_path: str):\n    import os\n \
+        \   os.makedirs(os.path.dirname(file_path), exist_ok=True)\n    return file_path\n\
+        \ndef preprocess_component(data_file_input, \n                         pp_data_file_output):\n\
+        \    import numpy as np\n    import tensorflow as tf\n\n    # define preprocess\
+        \ function\n    def preprocess_mnist_tfds(image, label=None):\n        # reshape\
+        \ and upsample to 3 channel for transfer learning models\n        # ... for\
+        \ when no channel information is present\n        if len(image.shape) != 3:\n\
+        \            image = np.dstack((image, image, image))\n        # ... for when\
+        \ channel is only 1 dimension\n        if image.shape[2] == 1:\n         \
+        \   image = tf.image.grayscale_to_rgb(image)\n        # normalize pixel values\n\
+        \        image = tf.cast(image, tf.float32) / 255.\n        # resize with\
+        \ pad for mobilenetv2\n        image = tf.image.resize_with_pad(image, target_height=224,\
+        \ target_width=224)\n        return image, label\n\n    # load data from previous\
+        \ step\n    # with open(data_file_input, 'rb') as f:\n    data = tf.data.Dataset.load(data_file_input)\n\
+        \n    data = data.map(preprocess_mnist_tfds, num_parallel_calls=tf.data.AUTOTUNE)\n\
+        \    data = data.batch(128)\n\n    # # preprocess and batch \n    # for key,\
+        \ value in data.items():\n    #     if value is not None:\n    #         data[key]\
+        \ = value.map(preprocess_mnist_tfds, num_parallel_calls=tf.data.AUTOTUNE)\n\
+        \    #         data[key] = data[key].batch(128)\n\n    # save output data\
+        \ \n    # with open(pp_data_file_output, \"wb\") as file:\n    #         file.write(data.to_file())\n\
+        \    data.save(pp_data_file_output)\n\nimport argparse\n_parser = argparse.ArgumentParser(prog='Preprocess\
+        \ component', description='')\n_parser.add_argument(\"--data-file-input\"\
+        , dest=\"data_file_input\", type=str, required=True, default=argparse.SUPPRESS)\n\
+        _parser.add_argument(\"--pp-data-file-output\", dest=\"pp_data_file_output\"\
+        , type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)\n\
+        _parsed_args = vars(_parser.parse_args())\n\n_outputs = preprocess_component(**_parsed_args)\n"
+      image: python:3.9
+    inputs:
+      artifacts:
+      - {name: load-tensorflow-dataset-component-data_file_output, path: /tmp/inputs/data_file_input/data}
+    outputs:
+      artifacts:
+      - {name: preprocess-component-pp_data_file_output, path: /tmp/outputs/pp_data_file_output/data}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.19
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"implementation": {"container":
+          {"args": ["--data-file-input", {"inputPath": "data_file_input"}, "--pp-data-file-output",
+          {"outputPath": "pp_data_file_output"}], "command": ["sh", "-c", "(PIP_DISABLE_PIP_VERSION_CHECK=1
+          python3 -m pip install --quiet --no-warn-script-location ''numpy'' ''tensorflow''
+          || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+          ''numpy'' ''tensorflow'' --user) && \"$0\" \"$@\"", "sh", "-ec", "program_path=$(mktemp)\nprintf
+          \"%s\" \"$0\" > \"$program_path\"\npython3 -u \"$program_path\" \"$@\"\n",
+          "def _make_parent_dirs_and_return_path(file_path: str):\n    import os\n    os.makedirs(os.path.dirname(file_path),
+          exist_ok=True)\n    return file_path\n\ndef preprocess_component(data_file_input,
+          \n                         pp_data_file_output):\n    import numpy as np\n    import
+          tensorflow as tf\n\n    # define preprocess function\n    def preprocess_mnist_tfds(image,
+          label=None):\n        # reshape and upsample to 3 channel for transfer learning
+          models\n        # ... for when no channel information is present\n        if
+          len(image.shape) != 3:\n            image = np.dstack((image, image, image))\n        #
+          ... for when channel is only 1 dimension\n        if image.shape[2] == 1:\n            image
+          = tf.image.grayscale_to_rgb(image)\n        # normalize pixel values\n        image
+          = tf.cast(image, tf.float32) / 255.\n        # resize with pad for mobilenetv2\n        image
+          = tf.image.resize_with_pad(image, target_height=224, target_width=224)\n        return
+          image, label\n\n    # load data from previous step\n    # with open(data_file_input,
+          ''rb'') as f:\n    data = tf.data.Dataset.load(data_file_input)\n\n    data
+          = data.map(preprocess_mnist_tfds, num_parallel_calls=tf.data.AUTOTUNE)\n    data
+          = data.batch(128)\n\n    # # preprocess and batch \n    # for key, value
+          in data.items():\n    #     if value is not None:\n    #         data[key]
+          = value.map(preprocess_mnist_tfds, num_parallel_calls=tf.data.AUTOTUNE)\n    #         data[key]
+          = data[key].batch(128)\n\n    # save output data \n    # with open(pp_data_file_output,
+          \"wb\") as file:\n    #         file.write(data.to_file())\n    data.save(pp_data_file_output)\n\nimport
+          argparse\n_parser = argparse.ArgumentParser(prog=''Preprocess component'',
+          description='''')\n_parser.add_argument(\"--data-file-input\", dest=\"data_file_input\",
+          type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--pp-data-file-output\",
+          dest=\"pp_data_file_output\", type=_make_parent_dirs_and_return_path, required=True,
+          default=argparse.SUPPRESS)\n_parsed_args = vars(_parser.parse_args())\n\n_outputs
+          = preprocess_component(**_parsed_args)\n"], "image": "python:3.9"}}, "inputs":
+          [{"name": "data_file_input", "type": "tf.data.Dataset"}], "name": "Preprocess
+          component", "outputs": [{"name": "pp_data_file_output", "type": "tf.data.Dataset"}]}',
+        pipelines.kubeflow.org/component_ref: '{}'}
+  - name: production-pipeline
+    inputs:
+      parameters:
+      - {name: dataset_str}
+      - {name: experiment_name}
+      - {name: train_test_split}
+    dag:
+      tasks:
+      - name: load-tensorflow-dataset-component
+        template: load-tensorflow-dataset-component
+        arguments:
+          parameters:
+          - {name: dataset_str, value: '{{inputs.parameters.dataset_str}}'}
+          - {name: train_test_split, value: '{{inputs.parameters.train_test_split}}'}
+      - name: preprocess-component
+        template: preprocess-component
+        dependencies: [load-tensorflow-dataset-component]
+        arguments:
+          artifacts:
+          - {name: load-tensorflow-dataset-component-data_file_output, from: '{{tasks.load-tensorflow-dataset-component.outputs.artifacts.load-tensorflow-dataset-component-data_file_output}}'}
+      - name: production-train-component
+        template: production-train-component
+        dependencies: [preprocess-component]
+        arguments:
+          parameters:
+          - {name: experiment_name, value: '{{inputs.parameters.experiment_name}}'}
+          artifacts:
+          - {name: preprocess-component-pp_data_file_output, from: '{{tasks.preprocess-component.outputs.artifacts.preprocess-component-pp_data_file_output}}'}
+  - name: production-train-component
+    container:
+      args: [--pp-data-file-input, /tmp/inputs/pp_data_file_input/data, --experiment-name,
+        '{{inputs.parameters.experiment_name}}']
+      command:
+      - sh
+      - -c
+      - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+        'numpy' 'tensorflow' 'tensorflow_hub' 'mlflow' || PIP_DISABLE_PIP_VERSION_CHECK=1
+        python3 -m pip install --quiet --no-warn-script-location 'numpy' 'tensorflow'
+        'tensorflow_hub' 'mlflow' --user) && "$0" "$@"
+      - sh
+      - -ec
+      - |
+        program_path=$(mktemp)
+        printf "%s" "$0" > "$program_path"
+        python3 -u "$program_path" "$@"
+      - "def production_train_component(pp_data_file_input,\n                    \
+        \           experiment_name):\n\n    import tensorflow_hub as hub\n    import\
+        \ mlflow\n    import numpy as np\n    import tensorflow as tf\n    import\
+        \ time\n\n    # mlflow Tracking requires definition of experiment name AND\
+        \ logged params\n    # Experiment names they should be defined as \"project-task-version\"\
+        \n    def set_mlflow_experiment(experiment_name, artifact_location = None):\n\
+        \        try:\n            experiment_id = mlflow.create_experiment(experiment_name,\
+        \ \n                                                    artifact_location=artifact_location)\n\
+        \        # except mlflow.exceptions.MlflowException as e:\n        #   if\
+        \ str(e) == f\"Experiment '{experiment_name}' already exists.\":\n       \
+        \ except:\n            print(f'Experiment already exists, setting experiment\
+        \ to {experiment_name}')\n            experiment_info = mlflow.set_experiment(experiment_name)\n\
+        \            experiment_id = experiment_info.experiment_id\n        experiment\
+        \ = mlflow.get_experiment(experiment_id)\n        print(\"---------------------\"\
+        )\n        print('Experiment details are:')\n        print(\"Name: {}\".format(experiment.name))\n\
+        \        print(\"Experiment_id: {}\".format(experiment.experiment_id))\n \
+        \       print(\"Artifact Location: {}\".format(experiment.artifact_location))\n\
+        \        print(\"Creation timestamp: {}\".format(experiment.creation_time))\n\
+        \        return experiment_id\n\n    # define preprocess function\n    def\
+        \ preprocess_mnist_tfds(image, label=None):\n        # reshape and upsample\
+        \ to 3 channel for transfer learning models\n        # ... for when no channel\
+        \ information is present\n        if len(image.shape) != 3:\n            image\
+        \ = np.dstack((image, image, image))\n        # ... for when channel is only\
+        \ 1 dimension\n        if image.shape[2] == 1:\n            image = tf.image.grayscale_to_rgb(image)\n\
+        \        # normalize pixel values\n        image = tf.cast(image, tf.float32)\
+        \ / 255.\n        # resize with pad for mobilenetv2\n        image = tf.image.resize_with_pad(image,\
+        \ target_height=224, target_width=224)\n        return image, label\n\n  \
+        \  class MNIST(mlflow.pyfunc.PythonModel): \n        def __init__(self, mlflow_registered_model_name\
+        \ = None):\n            self._model = None\n            self._mlflow_registered_model_name\
+        \ = mlflow_registered_model_name\n            self.load()    \n        @staticmethod\n\
+        \        def _build(self, hyperparameters):\n            ## Build model\n\
+        \            # class names for mnist hardcoded\n            class_names =\
+        \ [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\n            # set layer regularization\
+        \ for DNN\n            regularizer = tf.keras.regularizers.l1_l2(hyperparameters['l1'],\
+        \ hyperparameters['l2'])\n\n            # load in mobilenetv2 weights and\
+        \ instantiate dense classification head \n            base_model = \"https://tfhub.dev/google/tf2-preview/mobilenet_v2/feature_vector/4\"\
+        \n            layers = [\n                hub.KerasLayer(\n              \
+        \      base_model,\n                    input_shape=(224, 224, 3),\n     \
+        \               trainable=False,\n                    name='mobilenet_embedding'),\n\
+        \                tf.keras.layers.Dense(hyperparameters['num_hidden'],\n  \
+        \                                  kernel_regularizer=regularizer,\n     \
+        \                               activation='relu',\n                     \
+        \               name='dense_hidden'),\n                tf.keras.layers.Dense(len(class_names),\n\
+        \                                    kernel_regularizer=regularizer,\n   \
+        \                                 activation='softmax',\n                \
+        \                    name='mnist_prob')\n            ]\n\n            self._model\
+        \ = tf.keras.Sequential(layers, name='mnist-classification')\n\n         \
+        \   # compile model \n            self._model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=hyperparameters['learning_rate']),\n\
+        \                                loss=tf.keras.losses.SparseCategoricalCrossentropy(\n\
+        \                                from_logits=False),\n                   \
+        \             metrics=['accuracy'])\n\n            # base model logging\n\
+        \            self._model_base = base_model\n\n        def fit_hp_search(self,\
+        \ xy_train, xy_test, hyperparameters):                      \n           \
+        \ self._build(self, hyperparameters)\n            # fit model using train/test\
+        \ split to find hyperparams\n            self._train_history = self._model.fit(xy_train,\n\
+        \                                                epochs=hyperparameters['epochs'],\n\
+        \                                                validation_data=xy_test)\n\
+        \n        def fit_production(self, xy_train, hyperparameters):           \
+        \           \n            self._build(self, hyperparameters)\n           \
+        \ # fit model using all the data \n            self._train_history = self._model.fit(xy_train,\n\
+        \                                                epochs=hyperparameters['epochs'])\n\
+        \n        def load(self):\n            try:\n                results = mlflow.search_registered_models(\n\
+        \                    filter_string=f'name = \"{self._mlflow_registered_model_name}\"\
+        ')\n                latest_model_details = results[0].latest_versions[0]\n\
+        \                self._model = mlflow.pyfunc.load_model(\n               \
+        \     model_uri=f'{latest_model_details.source}')\n                print(f'Successfully\
+        \ loaded model from {latest_model_details.source}')\n            except IndexError:\n\
+        \                print('No models found.')\n                self._model =\
+        \ None\n                return self\n\n        def predict(self, context,\
+        \ model_input):\n            image, _ = preprocess_mnist_tfds(model_input)\n\
+        \            image = tf.reshape(image, [1, 224, 224, 3])\n            return\
+        \ self._model.predict(image).argmax()\n\n    # instantiate model and load\
+        \ data\n    mnist_model = MNIST()\n    ds_train = tf.data.Dataset.load(pp_data_file_input)\n\
+        \    hyperparameters = {\n    'learning_rate': 0.01,\n    'l1': 0.0,\n   \
+        \ 'l2': 0.0, \n    'num_hidden': 16,\n    'epochs': 10}\n\n    # train model\
+        \ and log via mlflow\n    experiment_id = set_mlflow_experiment(experiment_name=experiment_name)\n\
+        \    mlflow_run_name=f'production-{time.strftime(\"%Y%m%d-%H%M%S\")}'\n  \
+        \  with mlflow.start_run(experiment_id=experiment_id,  \n                \
+        \            run_name=mlflow_run_name) as run:\n        mnist_model.fit_production(xy_train=ds_train,\n\
+        \                                    hyperparameters=hyperparameters)\n  \
+        \      # MLFlow Tracking parameters\n        mlflow.log_params(params=hyperparameters)\n\
+        \n        # MLFlow Tracking metrics \n        # Logging metrics for each epoch\
+        \ (housed in dictionary)\n        training_history = mnist_model._train_history.history\n\
+        \        for epoch in range(0, hyperparameters['epochs']):\n            insert\
+        \ = {}\n            for metric, value in training_history.items():\n     \
+        \           insert[metric] = training_history[metric][epoch]\n           \
+        \ mlflow.log_metrics(metrics=insert, step=epoch+1)\n\n        # MLFlow tracking\
+        \ artifact (e.g. model file)\n        # this will log the model and all its\
+        \ details under run_id/artifacts\n        # ths will also register the model\
+        \ so it can be served\n        mlflow.pyfunc.log_model(python_model=mnist_model,\n\
+        \                                artifact_path=\"\",\n                   \
+        \             registered_model_name=experiment_name)\n\n        # Close out\
+        \ MLFlow run to prevent any log contamination.\n        mlflow.end_run(status='FINISHED')\
+        \ \n\nimport argparse\n_parser = argparse.ArgumentParser(prog='Production\
+        \ train component', description='')\n_parser.add_argument(\"--pp-data-file-input\"\
+        , dest=\"pp_data_file_input\", type=str, required=True, default=argparse.SUPPRESS)\n\
+        _parser.add_argument(\"--experiment-name\", dest=\"experiment_name\", type=str,\
+        \ required=True, default=argparse.SUPPRESS)\n_parsed_args = vars(_parser.parse_args())\n\
+        \n_outputs = production_train_component(**_parsed_args)\n"
+      env:
+      - {name: MLFLOW_TRACKING_URI, value: 'http://mlflow.mlflow.svc.cluster.local'}
+      image: python:3.9
+    inputs:
+      parameters:
+      - {name: experiment_name}
+      artifacts:
+      - {name: preprocess-component-pp_data_file_output, path: /tmp/inputs/pp_data_file_input/data}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.19
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"implementation": {"container":
+          {"args": ["--pp-data-file-input", {"inputPath": "pp_data_file_input"}, "--experiment-name",
+          {"inputValue": "experiment_name"}], "command": ["sh", "-c", "(PIP_DISABLE_PIP_VERSION_CHECK=1
+          python3 -m pip install --quiet --no-warn-script-location ''numpy'' ''tensorflow''
+          ''tensorflow_hub'' ''mlflow'' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3
+          -m pip install --quiet --no-warn-script-location ''numpy'' ''tensorflow''
+          ''tensorflow_hub'' ''mlflow'' --user) && \"$0\" \"$@\"", "sh", "-ec", "program_path=$(mktemp)\nprintf
+          \"%s\" \"$0\" > \"$program_path\"\npython3 -u \"$program_path\" \"$@\"\n",
+          "def production_train_component(pp_data_file_input,\n                               experiment_name):\n\n    import
+          tensorflow_hub as hub\n    import mlflow\n    import numpy as np\n    import
+          tensorflow as tf\n    import time\n\n    # mlflow Tracking requires definition
+          of experiment name AND logged params\n    # Experiment names they should
+          be defined as \"project-task-version\"\n    def set_mlflow_experiment(experiment_name,
+          artifact_location = None):\n        try:\n            experiment_id = mlflow.create_experiment(experiment_name,
+          \n                                                    artifact_location=artifact_location)\n        #
+          except mlflow.exceptions.MlflowException as e:\n        #   if str(e) ==
+          f\"Experiment ''{experiment_name}'' already exists.\":\n        except:\n            print(f''Experiment
+          already exists, setting experiment to {experiment_name}'')\n            experiment_info
+          = mlflow.set_experiment(experiment_name)\n            experiment_id = experiment_info.experiment_id\n        experiment
+          = mlflow.get_experiment(experiment_id)\n        print(\"---------------------\")\n        print(''Experiment
+          details are:'')\n        print(\"Name: {}\".format(experiment.name))\n        print(\"Experiment_id:
+          {}\".format(experiment.experiment_id))\n        print(\"Artifact Location:
+          {}\".format(experiment.artifact_location))\n        print(\"Creation timestamp:
+          {}\".format(experiment.creation_time))\n        return experiment_id\n\n    #
+          define preprocess function\n    def preprocess_mnist_tfds(image, label=None):\n        #
+          reshape and upsample to 3 channel for transfer learning models\n        #
+          ... for when no channel information is present\n        if len(image.shape)
+          != 3:\n            image = np.dstack((image, image, image))\n        # ...
+          for when channel is only 1 dimension\n        if image.shape[2] == 1:\n            image
+          = tf.image.grayscale_to_rgb(image)\n        # normalize pixel values\n        image
+          = tf.cast(image, tf.float32) / 255.\n        # resize with pad for mobilenetv2\n        image
+          = tf.image.resize_with_pad(image, target_height=224, target_width=224)\n        return
+          image, label\n\n    class MNIST(mlflow.pyfunc.PythonModel): \n        def
+          __init__(self, mlflow_registered_model_name = None):\n            self._model
+          = None\n            self._mlflow_registered_model_name = mlflow_registered_model_name\n            self.load()    \n        @staticmethod\n        def
+          _build(self, hyperparameters):\n            ## Build model\n            #
+          class names for mnist hardcoded\n            class_names = [0, 1, 2, 3,
+          4, 5, 6, 7, 8, 9]\n\n            # set layer regularization for DNN\n            regularizer
+          = tf.keras.regularizers.l1_l2(hyperparameters[''l1''], hyperparameters[''l2''])\n\n            #
+          load in mobilenetv2 weights and instantiate dense classification head \n            base_model
+          = \"https://tfhub.dev/google/tf2-preview/mobilenet_v2/feature_vector/4\"\n            layers
+          = [\n                hub.KerasLayer(\n                    base_model,\n                    input_shape=(224,
+          224, 3),\n                    trainable=False,\n                    name=''mobilenet_embedding''),\n                tf.keras.layers.Dense(hyperparameters[''num_hidden''],\n                                    kernel_regularizer=regularizer,\n                                    activation=''relu'',\n                                    name=''dense_hidden''),\n                tf.keras.layers.Dense(len(class_names),\n                                    kernel_regularizer=regularizer,\n                                    activation=''softmax'',\n                                    name=''mnist_prob'')\n            ]\n\n            self._model
+          = tf.keras.Sequential(layers, name=''mnist-classification'')\n\n            #
+          compile model \n            self._model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=hyperparameters[''learning_rate'']),\n                                loss=tf.keras.losses.SparseCategoricalCrossentropy(\n                                from_logits=False),\n                                metrics=[''accuracy''])\n\n            #
+          base model logging\n            self._model_base = base_model\n\n        def
+          fit_hp_search(self, xy_train, xy_test, hyperparameters):                      \n            self._build(self,
+          hyperparameters)\n            # fit model using train/test split to find
+          hyperparams\n            self._train_history = self._model.fit(xy_train,\n                                                epochs=hyperparameters[''epochs''],\n                                                validation_data=xy_test)\n\n        def
+          fit_production(self, xy_train, hyperparameters):                      \n            self._build(self,
+          hyperparameters)\n            # fit model using all the data \n            self._train_history
+          = self._model.fit(xy_train,\n                                                epochs=hyperparameters[''epochs''])\n\n        def
+          load(self):\n            try:\n                results = mlflow.search_registered_models(\n                    filter_string=f''name
+          = \"{self._mlflow_registered_model_name}\"'')\n                latest_model_details
+          = results[0].latest_versions[0]\n                self._model = mlflow.pyfunc.load_model(\n                    model_uri=f''{latest_model_details.source}'')\n                print(f''Successfully
+          loaded model from {latest_model_details.source}'')\n            except IndexError:\n                print(''No
+          models found.'')\n                self._model = None\n                return
+          self\n\n        def predict(self, context, model_input):\n            image,
+          _ = preprocess_mnist_tfds(model_input)\n            image = tf.reshape(image,
+          [1, 224, 224, 3])\n            return self._model.predict(image).argmax()\n\n    #
+          instantiate model and load data\n    mnist_model = MNIST()\n    ds_train
+          = tf.data.Dataset.load(pp_data_file_input)\n    hyperparameters = {\n    ''learning_rate'':
+          0.01,\n    ''l1'': 0.0,\n    ''l2'': 0.0, \n    ''num_hidden'': 16,\n    ''epochs'':
+          10}\n\n    # train model and log via mlflow\n    experiment_id = set_mlflow_experiment(experiment_name=experiment_name)\n    mlflow_run_name=f''production-{time.strftime(\"%Y%m%d-%H%M%S\")}''\n    with
+          mlflow.start_run(experiment_id=experiment_id,  \n                            run_name=mlflow_run_name)
+          as run:\n        mnist_model.fit_production(xy_train=ds_train,\n                                    hyperparameters=hyperparameters)\n        #
+          MLFlow Tracking parameters\n        mlflow.log_params(params=hyperparameters)\n\n        #
+          MLFlow Tracking metrics \n        # Logging metrics for each epoch (housed
+          in dictionary)\n        training_history = mnist_model._train_history.history\n        for
+          epoch in range(0, hyperparameters[''epochs'']):\n            insert = {}\n            for
+          metric, value in training_history.items():\n                insert[metric]
+          = training_history[metric][epoch]\n            mlflow.log_metrics(metrics=insert,
+          step=epoch+1)\n\n        # MLFlow tracking artifact (e.g. model file)\n        #
+          this will log the model and all its details under run_id/artifacts\n        #
+          ths will also register the model so it can be served\n        mlflow.pyfunc.log_model(python_model=mnist_model,\n                                artifact_path=\"\",\n                                registered_model_name=experiment_name)\n\n        #
+          Close out MLFlow run to prevent any log contamination.\n        mlflow.end_run(status=''FINISHED'')
+          \n\nimport argparse\n_parser = argparse.ArgumentParser(prog=''Production
+          train component'', description='''')\n_parser.add_argument(\"--pp-data-file-input\",
+          dest=\"pp_data_file_input\", type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--experiment-name\",
+          dest=\"experiment_name\", type=str, required=True, default=argparse.SUPPRESS)\n_parsed_args
+          = vars(_parser.parse_args())\n\n_outputs = production_train_component(**_parsed_args)\n"],
+          "image": "python:3.9"}}, "inputs": [{"name": "pp_data_file_input", "type":
+          "tf.data.Dataset"}, {"name": "experiment_name", "type": "String"}], "name":
+          "Production train component"}', pipelines.kubeflow.org/component_ref: '{}',
+        pipelines.kubeflow.org/arguments.parameters: '{"experiment_name": "{{inputs.parameters.experiment_name}}"}'}
+  arguments:
+    parameters:
+    - {name: dataset_str}
+    - {name: train_test_split}
+    - {name: experiment_name}
+  serviceAccountName: pipeline-runner
