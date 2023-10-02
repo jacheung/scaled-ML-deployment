@@ -197,7 +197,7 @@ spec:
           type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--pp-data-file-output\",
           dest=\"pp_data_file_output\", type=_make_parent_dirs_and_return_path, required=True,
           default=argparse.SUPPRESS)\n_parsed_args = vars(_parser.parse_args())\n\n_outputs
-          = preprocess_component(**_parsed_args)\n"], "image": "python:3.9"}}, "inputs":
+          = preprocess_component(**_parsed_args)\n"], "image": "python:3.8"}}, "inputs":
           [{"name": "data_file_input", "type": "tf.data.Dataset"}], "name": "Preprocess
           component", "outputs": [{"name": "pp_data_file_output", "type": "tf.data.Dataset"}]}',
         pipelines.kubeflow.org/component_ref: '{}'}
@@ -347,7 +347,7 @@ spec:
         \n_outputs = production_train_component(**_parsed_args)\n"
       env:
       - {name: MLFLOW_TRACKING_URI, value: 'http://mlflow.mlflow.svc.cluster.local'}
-      image: python:3.9
+      image: python:3.8
     inputs:
       parameters:
       - {name: experiment_name}
