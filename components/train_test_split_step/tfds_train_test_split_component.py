@@ -22,7 +22,7 @@ def train_test_split_component(tfds_input_path: InputPath('tf.data.Dataset'),
     
 
 
-parser = argparse.ArgumentParser(description="Split CSV file into train and test data")
+parser = argparse.ArgumentParser(description="Split tfds file into train and test data")
 parser.add_argument("--tfds_input_path", type=str, 
                     help="Directory for input file. Should be tensorflow dataset format.")
 parser.add_argument("--train_output_path", type=str,
@@ -30,9 +30,9 @@ parser.add_argument("--train_output_path", type=str,
 parser.add_argument("--test_output_path", type=str,
                     help="Directory for test output file")
 parser.add_argument("--train_proportion", type=str,
-                    help="Proportion of data to use for training. Acceptable values from [0.0: 1.0]")
+                    help="Proportion of data to use for training. Acceptable values from [0.0 - 1.0]")
 parser.add_argument("--test_proportion", type=str,
-                    help="Proportion of data to use for testing. Acceptable values from [0.0: 1.0]")
+                    help="Proportion of data to use for testing. Acceptable values from [0.0 - 1.0]")
 args = parser.parse_args()
     
 train_test_split_component(args.tfds_input_path, args.train_output_path, args.test_output_path,
