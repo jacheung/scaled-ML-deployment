@@ -4,7 +4,7 @@ import argparse
 from kfp.components import OutputPath
 
 def load_tf_dataset_component(dataset_str: str,
-                             data_output_path: OutputPath('tf.data.Dataset')):
+                             data_output_path: OutputPath(tf.data.Dataset)):
     
     # output is a dictionary with 'test' and 'train' keys. 
     data = load_tensorflow_dataset(dataset_str=dataset_str)
@@ -20,5 +20,5 @@ parser.add_argument("--data_output_path", type=str,
                     help="Directory for output file")
 args = parser.parse_args()
     
-load_tf_dataset_component(args.dataset_str, args.train_test_split, 
+load_tf_dataset_component(args.dataset_str, 
                           args.data_output_path)

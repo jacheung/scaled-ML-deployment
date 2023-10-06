@@ -13,8 +13,8 @@ def train_test_split_component(tfds_input_path: InputPath('tf.data.Dataset'),
 
     # train test split data based on train and test proportion
     train_dataset, test_dataset = train_test_split(data=data,
-                                                   train_proportion=train_proportion,
-                                                   test_proportion=test_proportion)
+                                                   train_proportion=float(train_proportion),
+                                                   test_proportion=float(test_proportion))
     
     # return train and test data output paths
     train_dataset.save(train_output_path)
