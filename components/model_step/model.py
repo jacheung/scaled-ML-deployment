@@ -5,9 +5,7 @@ import mlflow
 
 class MNIST(mlflow.pyfunc.PythonModel): 
     def __init__(self, mlflow_registered_model_name: str = None):
-        self._model = None
-        self._mlflow_registered_model_name = mlflow_registered_model_name
-        self.load()    
+        self._model = None  
     @staticmethod
     def _build(self, hyperparameters):
         ## Build model
