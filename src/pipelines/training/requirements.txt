@@ -1,0 +1,9 @@
+kfp==2.0.1
+kfp_pipeline_spec==0.2.2
+kserve==0.11.1
+mlflow
+numpy
+Pillow
+tensorflow
+tensorflow_datasets==4.9.3
+tensorflow_hub==0.15.0
