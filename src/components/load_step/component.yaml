@@ -13,6 +13,6 @@ implementation:
     image: localhost:5000/mnist-load-step
     command: [python3, load_step/load_component.py]
     args: [  
-      --dataset_str, {inputValue: dataset_str},
-      --dataset_output_path, {outputPath: dataset_output_path},
+      --dataset-str, {inputValue: dataset_str},
+      --dataset-output-path, {outputPath: dataset_output_path},
     ]

@@ -1,0 +1,18 @@
+name: Preprocess TensorFlow dataset for MobileNetV2
+description: Preprocess TensorFlow dataset for MobileNetV2
+
+inputs:
+- {name: dataset_file_input, type: String, description: 'Raw TensorFlow dataset input path.'}
+outputs:
+- {name: pp_dataset_file_output, type: String, description: 'Dataset output path.'}
+metadata:
+  annotations:
+    author: Jonathan Cheung <jacheung6@gmail.com>
+implementation:
+  container:
+    image: localhost:5000/mnist-preprocess-step
+    command: [python3, preprocess/preprocess_component.py]
+    args: [  
+      --dataset-file-input, {inputPath: dataset_file_input},
+      --pp-dataset-file-output, {outputPath: pp_dataset_file_output},
+    ]
