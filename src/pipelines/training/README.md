@@ -21,7 +21,7 @@ Clean up the local version of the registry:
 docker rm <your_acc>/mnist-training:latest
 ```
 
-### Using your training images
+### Using your training image
 
 Pull the image from your registry
 ```

@@ -7,12 +7,6 @@ This repository is part 3, the last part, of a series of templates for stepping 
 
 
 
- ### Training image
-If you have a local registry you can use `localhost:5000` as your `<your_acc>`
-```
-docker build -t <your_acc>/mnist-training:latest .
-```
-
 
 
  ```
