@@ -6,22 +6,22 @@ from kfp.dsl import OutputPath
 
 # Function doing actual work of loading datasets
 def load_tf_dataset_component(dataset_str: str,
-                              data_output_path: OutputPath(tf.data.Dataset)):
+                              dataset_output_path: OutputPath(tf.data.Dataset)):
     
     # output is a dictionary with 'test' and 'train' keys. 
     data = load_tensorflow_dataset(dataset_str=dataset_str)
     
     # save output data 
-    data.save(data_output_path)
+    data.save(dataset_output_path)
     
 
 # Defining the argument parser via the CLI
-parser = argparse.ArgumentParser(description="Load a cleaned tensorflow dataset from tfds.")
-parser.add_argument("--dataset_str", type=str, 
+parser = argparse.ArgumentParser(description="Loads from TensorFlow Datasets, a collection of ready-to-use datasets.")
+parser.add_argument("--dataset-str", type=str, 
                     help="Dataset string to download. (e.g. mnist)")
-parser.add_argument("--data_output_path", type=str,
+parser.add_argument("--dataset-output-path", type=str,
                     help="Directory for output file")
 args = parser.parse_args()
     
 load_tf_dataset_component(args.dataset_str, 
-                          args.data_output_path)
+                          args.dataset_output_path)

@@ -1,5 +1,5 @@
 from preprocess import preprocess_mnist_tfds
-from kfp.components import InputPath, OutputPath
+from kfp.dsl  import InputPath, OutputPath
 import tensorflow as tf
 import argparse
 
