@@ -1,0 +1,15 @@
+name: Production model training for MobileNetV2
+description: Train model with all data with optimized hyperparameters loaded from MLflow
+
+inputs:
+- {name: training_dataset_file_input, type: String, description: 'Preprocessed dataset location for MobileNetV2'}
+metadata:
+  annotations:
+    author: Jonathan Cheung <jacheung6@gmail.com>
+implementation:
+  container:
+    image: jacheung6/production-MNIST-MobileNetV2:latest
+    command: [python3, model_step/model_component.py]
+    args: [  
+      --training-dataset-file-input, {inputValue: training_dataset_file_input}
+    ]
