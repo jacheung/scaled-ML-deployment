@@ -13,23 +13,23 @@ docker build -t <your_acc>/mnist-training:latest -f pipelines/training/Dockerfil
 
 You can push the image via:
 ```
-docker push <your_acc>/mnist-training:latest
+docker push <your_acc>/tutorial-training-container:latest
 ```
 
 Clean up the local version of the registry:
 ```
-docker rm <your_acc>/mnist-training:latest
+docker rm <your_acc>/tutorial-training-container:latest
 ```
 
 ### Using your training image
 
 Pull the image from your registry
 ```
-docker pull <your_acc>/mnist-training:latest
+docker pull <your_acc>/tutorial-training-containerg:latest
 ```
 Run the latest training image
 ```
-docker run <your_acc>/mnist-training python3 opt/training-pipeline.py \
+docker run <your_acc>/tutorial-training-container python3 opt/training-pipeline.py \
     --epochs <epoch number>
     --l1 <layer1_regularization>
     --l2 <layer2_regularization>

@@ -39,8 +39,8 @@ if __name__ == "__main__":
     data = data.map(preprocess.preprocess_mnist_tfds,
                     num_parallel_calls=tf.data.AUTOTUNE).batch(128)
     train_dataset, test_dataset = tfds_train_test_split.train_test_split(data=data,
-                                                                        train_proportion=.75,
-                                                                        test_proportion=.25)
+                                                                        train_proportion=.75)
+    
     # instantiate hyperparameters from arguments. This'll be changed for katib
     hyperparameters = {'epochs': args.epochs,
                     'l1': args.l1,

@@ -10,7 +10,7 @@ metadata:
     author: Jonathan Cheung <jacheung6@gmail.com>
 implementation:
   container:
-    image: localhost:5000/mnist-load-step
+    image: jacheung6/load-tf-dataset:latest
     command: [python3, load_step/load_component.py]
     args: [  
       --dataset-str, {inputValue: dataset_str},
