@@ -1,12 +1,12 @@
 #!/bin/bash -e
-image_name=jacheung6/load-tf-dataset
+image_name=jacheung6/production-MNIST-MobileNetV2
 image_tag=v0.1
 full_image_name=${image_name}:${image_tag}
 latest_image_name=${image_name}:latest
 
 cd "$(dirname "$0")" 
 echo "dirname : [$(dirname "$0")]"
-docker build -t "${full_image_name}" -t latest_image_name . -f Dockerfile
+docker build -t "${full_image_name}" -t "${latest_image_name}" . -f Dockerfile
 docker push ${image_name} --all-tags
 
 # Output the strict image name, which contains the sha256 image digest

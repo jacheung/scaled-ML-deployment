@@ -1,0 +1,72 @@
+---
+apiVersion: kubeflow.org/v1beta1
+kind: Experiment
+metadata:
+  namespace: kubeflow
+  name: random
+spec:
+  objective:
+    type: maximize
+    goal: 100
+    objectiveMetricName: accuracy
+  algorithm:
+    algorithmName: random
+  parallelTrialCount: 3
+  maxTrialCount: 12
+  maxFailedTrialCount: 3
+  parameters:
+    - name: epochs
+      parameterType: integer
+      feasibleSpace:
+        min: "5"
+        max: "20"
+    - name: l1
+      parameterType: double
+      feasibleSpace:
+        min: "0.0"
+        max: "0.5"
+    - name: l2
+      parameterType: double
+      feasibleSpace:
+        min: "0.0"
+        max: "0.5"
+    - name: num_hidden
+      parameterType: integer
+      feasibleSpace:
+        min: "16"
+        max: "256"
+    - name: learning_rate
+      parameterType: double
+      feasibleSpace:
+        min: "0.01"
+        max: "0.1"
+  trialTemplate:
+    primaryContainerName: training-container
+    trialParameters:
+      - name: learningRate
+        description: Learning rate for the training model
+        reference: lr
+      - name: momentum
+        description: Momentum for the training model
+        reference: momentum
+    trialSpec:
+      apiVersion: batch/v1
+      kind: Job
+      spec:
+        template:
+          spec:
+            containers:
+              - name: training-container
+                image: docker.io/jacheung6/tutorial-training-container:latest
+                command:
+                  - "python3"
+                  - "/opt/pytorch-mnist/mnist.py"
+                  - "--epochs=1"
+                  - "--batch-size=16"
+                  - "--lr=${trialParameters.learningRate}"
+                  - "--momentum=${trialParameters.momentum}"
+                resources:
+                  limits:
+                    memory: "1Gi"
+                    cpu: "0.5"
+            restartPolicy: Never
