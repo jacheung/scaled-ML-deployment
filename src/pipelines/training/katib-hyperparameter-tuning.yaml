@@ -16,7 +16,7 @@ spec:
   maxFailedTrialCount: 3
   parameters:
     - name: epochs
-      parameterType: integer
+      parameterType: int
       feasibleSpace:
         min: "5"
         max: "20"
@@ -31,7 +31,7 @@ spec:
         min: "0.0"
         max: "0.5"
     - name: num_hidden
-      parameterType: integer
+      parameterType: int
       feasibleSpace:
         min: "16"
         max: "256"
@@ -57,7 +57,7 @@ spec:
         reference: num_hidden
       - name: learningRate
         description: Learning rate for the training model
-        reference: lr
+        reference: learning_rate
     trialSpec:
       apiVersion: batch/v1
       kind: Job
