@@ -1,6 +1,6 @@
 #!/bin/bash -e
 image_name=jacheung6/tutorial-training-container
-image_tag=v0.1
+image_tag=v0.2
 full_image_name=${image_name}:${image_tag}
 latest_image_name=${image_name}:latest
 

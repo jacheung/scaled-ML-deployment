@@ -36,3 +36,6 @@ docker run <your_acc>/tutorial-training-container python3 opt/training-pipeline.
     --num_hidden <l1 units>
     --learning_rate <learning_rate>
 ```
+
+docker run jacheung6/tutorial-training-container python3 opt/training-pipeline.py \
+    --mlflow_experiment_name='test' --epochs=5 --l1=0 --l2=0 --num_hidden=64 --learning_rate=.01

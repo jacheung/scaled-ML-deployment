@@ -1,6 +1,7 @@
 import mlflow
 import tensorflow as tf
 import argparse
+import os
 # Project imports
 from components.load_step import load
 from components.preprocess_step import preprocess
@@ -57,7 +58,7 @@ if __name__ == "__main__":
 
         # MLFlow Tracking metrics 
         # Logging metrics for each epoch (housed in dictionary)
-    training_history = MNIST._train_history.history
+        # training_history = MNIST._train_history.history
         # for epoch in range(0, hyperparameters['epochs']):
         #     insert = {}
         #     for metric, value in training_history.items():

@@ -1,7 +1,20 @@
 import tensorflow as tf
 import tensorflow_hub as hub
 import mlflow
-from utils import KatibLossPrint
+import os
+
+os.environ["TF_USE_LEGACY_KERAS"] = 1
+
+class KatibLossPrint(tf.keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs=None):
+            """
+            Simple function for printing the history so that Katib picks it up
+            """
+            hist = self.model.history.history
+            history_keys = list(hist.keys())
+            print('\nepoche {}:'.format(epoch))
+            for cur_key in history_keys:
+                print('{}={}'.format(cur_key,hist[cur_key][-1]))
 
 
 class MNIST(mlflow.pyfunc.PythonModel): 
@@ -59,4 +72,5 @@ class MNIST(mlflow.pyfunc.PythonModel):
         # fit model using all the data 
         self._train_history = self._model.fit(xy_train,
                                                epochs=hyperparameters['epochs'])
-    
+
+

@@ -3,7 +3,7 @@ apiVersion: kubeflow.org/v1beta1
 kind: Experiment
 metadata:
   namespace: kubeflow
-  name: random
+  name: random-mnist
 spec:
   objective:
     type: maximize
@@ -11,7 +11,7 @@ spec:
     objectiveMetricName: accuracy
   algorithm:
     algorithmName: random
-  parallelTrialCount: 3
+  parallelTrialCount: 1
   maxTrialCount: 12
   maxFailedTrialCount: 3
   parameters:
@@ -78,6 +78,6 @@ spec:
                   - "--lr=${trialParameters.learningRate}"
                 resources:
                   limits:
-                    memory: "1Gi"
-                    cpu: "2.0"
+                    memory: "5Gi"
+                    cpu: "3.0"
             restartPolicy: Never
