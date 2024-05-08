@@ -1,6 +1,7 @@
 import tensorflow as tf
 import tensorflow_hub as hub
 import mlflow
+from utils import KatibLossPrint
 
 
 class MNIST(mlflow.pyfunc.PythonModel): 
@@ -49,7 +50,9 @@ class MNIST(mlflow.pyfunc.PythonModel):
         # fit model using train/test split to find hyperparams
         self._train_history = self._model.fit(xy_train,
                                                epochs=hyperparameters['epochs'],
-                                               validation_data=xy_test)
+                                               validation_data=xy_test,
+                                               verbose=0,
+                                               callbacks=[KatibLossPrint()])
     
     def fit_production(self, xy_train, hyperparameters):                      
         self._build(self, hyperparameters)

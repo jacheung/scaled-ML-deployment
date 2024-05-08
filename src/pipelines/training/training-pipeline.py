@@ -6,7 +6,6 @@ from components.load_step import load
 from components.preprocess_step import preprocess
 from components.train_test_split_step import tfds_train_test_split
 from components.model_step import model
-from components.utils import set_mlflow_experiment
 
 
 def parse_arguments():
@@ -31,7 +30,7 @@ if __name__ == "__main__":
     args = parse_arguments()
 
     # mlflow experiment
-    experiment_id = set_mlflow_experiment(args.mlflow_experiment_name)
+    # experiment_id = set_mlflow_experiment(args.mlflow_experiment_name)
 
     # begin data preparation of pipeline
     data = load.mini_load_tensorflow_dataset(dataset_str='mnist',
@@ -49,20 +48,20 @@ if __name__ == "__main__":
                     'learning_rate': args.learning_rate}
 
     MNIST = model.MNIST()
-    with mlflow.start_run():
-        MNIST.fit_hp_search(xy_train=train_dataset,
+    # with mlflow.start_run():
+    MNIST.fit_hp_search(xy_train=train_dataset,
                             xy_test=test_dataset,
                             hyperparameters=hyperparameters)
         # MLFlow Tracking parameters
-        mlflow.log_params(params=hyperparameters)
+        # mlflow.log_params(params=hyperparameters)
 
         # MLFlow Tracking metrics 
         # Logging metrics for each epoch (housed in dictionary)
-        training_history = MNIST._train_history.history
-        for epoch in range(0, hyperparameters['epochs']):
-            insert = {}
-            for metric, value in training_history.items():
-                insert[metric] = training_history[metric][epoch]
-            mlflow.log_metrics(metrics=insert, step=epoch+1)
+    training_history = MNIST._train_history.history
+        # for epoch in range(0, hyperparameters['epochs']):
+        #     insert = {}
+        #     for metric, value in training_history.items():
+        #         insert[metric] = training_history[metric][epoch]
+        #     mlflow.log_metrics(metrics=insert, step=epoch+1)
         
 

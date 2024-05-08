@@ -79,5 +79,5 @@ spec:
                 resources:
                   limits:
                     memory: "1Gi"
-                    cpu: "0.5"
+                    cpu: "2.0"
             restartPolicy: Never
