@@ -1,10 +1,8 @@
-kfp==2.7.0
-kfp_pipeline_spec==0.3.0
-kserve==0.12.1
+kfp==1.8.19
+tensorflow==2.13.0
+kfp_pipeline_spec
 mlflow
 numpy
 Pillow
-tensorflow>=2.16.0
-tensorflow_datasets==4.9.4
+tensorflow_datasets
 tensorflow-hub
-tf_keras

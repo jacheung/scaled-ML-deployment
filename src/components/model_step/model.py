@@ -1,9 +1,7 @@
 import tensorflow as tf
 import tensorflow_hub as hub
 import mlflow
-import os
 
-os.environ["TF_USE_LEGACY_KERAS"] = 1
 
 class KatibLossPrint(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
@@ -12,7 +10,7 @@ class KatibLossPrint(tf.keras.callbacks.Callback):
             """
             hist = self.model.history.history
             history_keys = list(hist.keys())
-            print('\nepoche {}:'.format(epoch))
+            print('\nepoch {}:'.format(epoch))
             for cur_key in history_keys:
                 print('{}={}'.format(cur_key,hist[cur_key][-1]))
 
