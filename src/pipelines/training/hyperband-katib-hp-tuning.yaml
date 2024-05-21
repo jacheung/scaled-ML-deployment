@@ -1,0 +1,87 @@
+---
+apiVersion: kubeflow.org/v1beta1
+kind: Experiment
+metadata:
+  namespace: devs
+  name: bayes-mnist
+spec:
+  objective:
+    type: maximize
+    goal: 1.0
+    objectiveMetricName: accuracy
+  algorithm:
+    algorithmName: bayesianoptimization
+  parallelTrialCount: 2
+  maxTrialCount: 12
+  maxFailedTrialCount: 4
+  parameters:
+    - name: epochs
+      parameterType: int
+      feasibleSpace:
+        min: "5"
+        max: "20"
+    - name: l1
+      parameterType: double
+      feasibleSpace:
+        min: "0.01"
+        max: "0.5"
+    - name: l2
+      parameterType: double
+      feasibleSpace:
+        min: "0.01"
+        max: "0.5"
+    - name: num_hidden
+      parameterType: int
+      feasibleSpace:
+        min: "16"
+        max: "256"
+    - name: learning_rate
+      parameterType: double
+      feasibleSpace:
+        min: "0.01"
+        max: "0.5"
+  trialTemplate:
+    primaryContainerName: training-container
+    trialParameters:
+      - name: epochs
+        description: Number of training epochs
+        reference: epochs
+      - name: l1
+        description: First output dense layer regularization.. Values range from 0 to 1.
+        reference: l1
+      - name: l2
+        description: Final output dense layer regularization. Values range from 0 to 1.
+        reference: l2
+      - name: numHidden
+        description: Number of hidden units in first output dense layer. 
+        reference: num_hidden
+      - name: learningRate
+        description: Learning rate for the training model
+        reference: learning_rate
+    trialSpec:
+      apiVersion: batch/v1
+      kind: Job
+      spec:
+        template:
+          metadata:
+            annotations:
+              sidecar.istio.io/inject: "false"
+            name: tensorflow
+          spec:
+            containers:
+              - name: training-container
+                image: docker.io/jacheung6/tutorial-training-container:latest
+                command:
+                  - "python3"
+                  - "/opt/training-pipeline.py"
+                  - "--mlflow_experiment_name='test-mnist'"
+                  - "--epochs=${trialParameters.epochs}"
+                  - "--l1=${trialParameters.l1}"
+                  - "--l2=${trialParameters.l2}"
+                  - "--num_hidden=${trialParameters.numHidden}"
+                  - "--learning_rate=${trialParameters.learningRate}"
+                resources:
+                  limits:
+                    memory: "5Gi"
+                    cpu: "3.0"
+            restartPolicy: Never

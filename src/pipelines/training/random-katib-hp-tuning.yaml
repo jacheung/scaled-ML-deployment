@@ -7,7 +7,7 @@ metadata:
 spec:
   objective:
     type: maximize
-    goal: 100
+    goal: 1.0
     objectiveMetricName: accuracy
   algorithm:
     algorithmName: random
@@ -59,33 +59,29 @@ spec:
         description: Learning rate for the training model
         reference: learning_rate
     trialSpec:
-      apiVersion: "kubeflow.org/v1"
+      apiVersion: batch/v1
       kind: Job
       spec:
-        tfReplicaSpecs:
-          Worker:
-            replicas: 1
-            restartPolicy: OnFailure
-            template:
-              metadata:
-                annotations:
-                  sidecar.istio.io/inject: "false"
-                name: tensorflow
-              spec:
-                containers:
-                  - name: training-container
-                    image: docker.io/jacheung6/tutorial-training-container:latest
-                    command:
-                      - "python3"
-                      - "/opt/training-pipeline.py"
-                      - "--mlflow_experiment_name='test-mnist'"
-                      - "--epochs=${trialParameters.epochs}"
-                      - "--l1=${trialParameters.l1}"
-                      - "--l2=${trialParameters.l2}"
-                      - "--num_hidden=${trialParameters.numHidden}"
-                      - "--learning_rate=${trialParameters.learningRate}"
+        template:
+          metadata:
+            annotations:
+              sidecar.istio.io/inject: "false"
+            name: tensorflow
+          spec:
+            containers:
+              - name: training-container
+                image: docker.io/jacheung6/tutorial-training-container:latest
+                command:
+                  - "python3"
+                  - "/opt/training-pipeline.py"
+                  - "--mlflow_experiment_name='test-mnist'"
+                  - "--epochs=${trialParameters.epochs}"
+                  - "--l1=${trialParameters.l1}"
+                  - "--l2=${trialParameters.l2}"
+                  - "--num_hidden=${trialParameters.numHidden}"
+                  - "--learning_rate=${trialParameters.learningRate}"
                 resources:
                   limits:
                     memory: "5Gi"
                     cpu: "3.0"
-              restartPolicy: Never
+            restartPolicy: Never
